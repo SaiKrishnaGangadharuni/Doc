@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1625">
+<title>JLPT N5 Trainer — 日本語</title>
+<style>
+:root{
+  --bg:#1a1625; --card:#252033; --card2:#2e2840; --accent:#f472b6; --accent2:#a78bfa;
+  --good:#34d399; --bad:#f87171; --text:#f3f0fa; --muted:#a89fc4; --border:#3a3352;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans","Noto Sans Telugu","Noto Sans JP",sans-serif;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 90px}
+header{display:flex;align-items:center;gap:10px;padding:14px 0 4px}
+header .back{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:8px 14px;font-size:15px;cursor:pointer;display:none}
+h1{font-size:22px;font-weight:700}
+h1 small{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:2px}
+.screen{display:none}.screen.active{display:block}
+/* Home */
+.menu{display:flex;flex-direction:column;gap:14px;margin-top:18px}
+.menu button{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:20px;padding:22px 20px;color:var(--text);cursor:pointer;text-align:left;display:flex;align-items:center;gap:18px;transition:transform .1s}
+.menu button:active{transform:scale(.98)}
+.menu .jp{font-size:40px;line-height:1;width:64px;text-align:center;color:var(--accent)}
+.menu .t{font-size:19px;font-weight:700}
+.menu .s{font-size:13px;color:var(--muted);margin-top:3px}
+/* Tabs */
+.tabs{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
+.tabs button{flex:1;min-width:90px;background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:10px 6px;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--accent2);color:#1a1625;font-weight:700;border-color:var(--accent2)}
+/* Chart (gojuon table) */
+.tbl{display:grid;gap:6px}
+.tbl.c6{grid-template-columns:32px repeat(5,1fr)}
+.tbl.c4{grid-template-columns:32px repeat(3,1fr)}
+.hdr{color:var(--accent2);font-weight:800;text-align:center;font-size:13px;align-self:center}
+.rowlbl{color:var(--accent2);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--border);border-radius:10px}
+.tcell{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:7px 2px;text-align:center;min-height:70px;display:flex;flex-direction:column;justify-content:center}
+.tcell .ch{font-size:23px;line-height:1.2}
+.tcell .ro{font-size:11px;color:var(--accent);font-weight:600;margin-top:3px}
+.tcell .te{font-size:12px;color:var(--muted);margin-top:1px}
+.tcell.empty{background:transparent;border:1px dashed var(--border);opacity:.3}
+@media(min-width:480px){.tcell .ch{font-size:30px}.tcell .ro{font-size:12px}.tcell .te{font-size:13px}}
+.kgrid{display:grid;grid-template-columns:1fr;gap:10px}
+.kcell{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;display:flex;gap:16px;align-items:center}
+.kcell .ch{font-size:44px;min-width:64px;text-align:center}
+.kcell .en{font-size:15px;font-weight:700}
+.kcell .te{font-size:14px;color:var(--accent);margin-top:2px}
+.kcell .rd{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+/* Practice bar */
+.pbar{position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 40%)}
+.pbar button{width:100%;max-width:608px;margin:0 auto;display:block;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:16px;padding:16px;font-size:17px;font-weight:800;color:#1a1625;cursor:pointer}
+/* Quiz */
+.qtop{display:flex;justify-content:space-between;align-items:center;margin:10px 0;color:var(--muted);font-size:14px}
+.qcard{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:24px;padding:34px 20px;text-align:center;margin-bottom:16px}
+.qcard .qch{font-size:76px;line-height:1.15}
+.qcard .qhint{font-size:13px;color:var(--muted);margin-top:10px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts button{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px 8px;color:var(--text);cursor:pointer;font-size:16px}
+.opts button .ro{font-weight:700;font-size:17px}
+.opts button .te{color:var(--muted);font-size:15px;margin-top:3px}
+.opts button.correct{border-color:var(--good);background:rgba(52,211,153,.15)}
+.opts button.correct .te,.opts button.wrong .te{color:inherit}
+.opts button.wrong{border-color:var(--bad);background:rgba(248,113,113,.15)}
+.opts.kmode{grid-template-columns:1fr}
+.feedback{text-align:center;min-height:26px;margin:14px 0 6px;font-size:16px;font-weight:700}
+.next{width:100%;background:var(--accent2);border:none;border-radius:16px;padding:15px;font-size:16px;font-weight:800;color:#1a1625;cursor:pointer;visibility:hidden}
+.note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button class="back" id="backBtn" onclick="goBack()">←</button>
+    <h1 id="title">JLPT N5 Trainer<small id="subtitle">Japanese • 日本語 • జపనీస్</small></h1>
+  </header>
+
+  <div class="screen active" id="scr-home">
+    <div class="menu">
+      <button onclick="openScript('hiragana')"><span class="jp">あ</span><span><span class="t">Hiragana</span><span class="s">ひらがな • 104 characters • హిరగన</span></span></button>
+      <button onclick="openScript('katakana')"><span class="jp">ア</span><span><span class="t">Katakana</span><span class="s">カタカナ • 104 characters • కటకన</span></span></button>
+      <button onclick="openScript('kanji')"><span class="jp">漢</span><span><span class="t">Kanji</span><span class="s">漢字 • 157 N5 kanji • కంజి</span></span></button>
+    </div>
+    <p class="note">Tap a script to see the full chart with English &amp; Telugu readings.<br>Then press <b>Practice</b> to test yourself. がんばって! (Good luck!)</p>
+  </div>
+
+  <d// Kana data: [hiragana, katakana, romaji, telugu]
+const KANA_BASIC = [
+["あ","ア","a","అ"],["い","イ","i","ఇ"],["う","ウ","u","ఉ"],["え","エ","e","ఎ"],["お","オ","o","ఒ"],
+["か","カ","ka","క"],["き","キ","ki","కి"],["く","ク","ku","కు"],["け","ケ","ke","కె"],["こ","コ","ko","కొ"],
+["さ","サ","sa","స"],["し","シ","shi","షి"],["す","ス","su","సు"],["せ","セ","se","సె"],["そ","ソ","so","సొ"],
+["た","タ","ta","త"],["ち","チ","chi","చి"],["つ","ツ","tsu","త్సు"],["て","テ","te","తె"],["と","ト","to","తొ"],
+["な","ナ","na","న"],["に","ニ","ni","ని"],["ぬ","ヌ","nu","ను"],["ね","ネ","ne","నె"],["の","ノ","no","నొ"],
+["は","ハ","ha","హ"],["ひ","ヒ","hi","హి"],["ふ","フ","fu","ఫు"],["へ","ヘ","he","హె"],["ほ","ホ","ho","హొ"],
+["ま","マ","ma","మ"],["み","ミ","mi","మి"],["む","ム","mu","ము"],["め","メ","me","మె"],["も","モ","mo","మొ"],
+["や","ヤ","ya","య"],["ゆ","ユ","yu","యు"],["よ","ヨ","yo","యొ"],
+["ら","ラ","ra","ర"],["り","リ","ri","రి"],["る","ル","ru","రు"],["れ","レ","re","రె"],["ろ","ロ","ro","రొ"],
+["わ","ワ","wa","వ"],["を","ヲ","wo (o)","ఒ"],["ん","ン","n","న్"]
+];
+const KANA_DAKUTEN = [
+["が","ガ","ga","గ"],["ぎ","ギ","gi","గి"],["ぐ","グ","gu","గు"],["げ","ゲ","ge","గె"],["ご","ゴ","go","గొ"],
+["ざ","ザ","za","జ"],["じ","ジ","ji","జి"],["ず","ズ","zu","జు"],["ぜ","ゼ","ze","జె"],["ぞ","ゾ","zo","జొ"],
+["だ","ダ","da","ద"],["ぢ","ヂ","ji (di)","జి"],["づ","ヅ","zu (du)","జు"],["で","デ","de","దె"],["ど","ド","do","దొ"],
+["ば","バ","ba","బ"],["び","ビ","bi","బి"],["ぶ","ブ","bu","బు"],["べ","ベ","be","బె"],["ぼ","ボ","bo","బొ"],
+["ぱ","パ","pa","ప"],["ぴ","ピ","pi","పి"],["ぷ","プ","pu","పు"],["ぺ","ペ","pe","పె"],["ぽ","ポ","po","పొ"]
+];
+const KANA_COMBO = [
+["きゃ","キャ","kya","క్య"],["きゅ","キュ","kyu","క్యు"],["きょ","キョ","kyo","క్యొ"],
+["しゃ","シャ","sha","ష"],["しゅ","シュ","shu","షు"],["しょ","ショ","sho","షొ"],
+["ちゃ","チャ","cha","చ"],["ちゅ","チュ","chu","చు"],["ちょ","チョ","cho","చొ"],
+["にゃ","ニャ","nya","న్య"],["にゅ","ニュ","nyu","న్యు"],["にょ","ニョ","nyo","న్యొ"],
+["ひゃ","ヒャ","hya","హ్య"],["ひゅ","ヒュ","hyu","హ్యు"],["ひょ","ヒョ","hyo","హ్యొ"],
+["みゃ","ミャ","mya","మ్య"],["みゅ","ミュ","myu","మ్యు"],["みょ","ミョ","myo","మ్యొ"],
+["りゃ","リャ","rya","ర్య"],["りゅ","リュ","ryu","ర్యు"],["りょ","リョ","ryo","ర్యొ"],
+["ぎゃ","ギャ","gya","గ్య"],["ぎゅ","ギュ","gyu","గ్యు"],["ぎょ","ギョ","gyo","గ్యొ"],
+["じゃ","ジャ","ja","జ"],["じゅ","ジュ","ju","జు"],["じょ","ジョ","jo","జొ"],
+["びゃ","ビャ","bya","బ్య"],["びゅ","ビュ","byu","బ్యు"],["びょ","ビョ","byo","బ్యొ"],
+["ぴゃ","ピャ","pya","ప్య"],["ぴゅ","ピュ","pyu","ప్యు"],["ぴょ","ピョ","pyo","ప్యొ"]
+];
+// Kanji data: [kanji, english meaning, telugu meaning, onyomi (kana - romaji), kunyomi (kana - romaji)]
+const KANJI = [
+["日","sun, day","సూర్యుడు, రోజు","ニチ・ジツ (nichi, jitsu)","ひ (hi), か (ka)"],
+["月","moon, month","చంద్రుడు, నెల","ゲツ・ガツ (getsu, gatsu)","つき (tsuki)"],
+["火","fire","నిప్పు","カ (ka)","ひ (hi)"],
+["水","water","నీరు","スイ (sui)","みず (mizu)"],
+["木","tree, wood","చెట్టు, కలప","モク・ボク (moku, boku)","き (ki)"],
+["金","gold, money","బంగారం, డబ్బు","キン (kin)","かね (kane)"],
+["土","earth, soil","నేల, మట్టి","ド・ト (do, to)","つち (tsuchi)"],
+["曜","weekday","వారపు రోజు","ヨウ (you)","—"],
+["一","one","ఒకటి","イチ (ichi)","ひと(つ) (hitotsu)"],
+["二","two","రెండు","ニ (ni)","ふた(つ) (futatsu)"],
+["三","three","మూడు","サン (san)","みっ(つ) (mittsu)"],
+["四","four","నాలుగు","シ (shi)","よん, よっ(つ) (yon, yottsu)"],
+["五","five","ఐదు","ゴ (go)","いつ(つ) (itsutsu)"],
+["六","six","ఆరు","ロク (roku)","むっ(つ) (muttsu)"],
+["七","seven","ఏడు","シチ (shichi)","なな(つ) (nanatsu)"],
+["八","eight","ఎనిమిది","ハチ (hachi)","やっ(つ) (yattsu)"],
+["九","nine","తొమ్మిది","キュウ・ク (kyuu, ku)","ここの(つ) (kokonotsu)"],
+["十","ten","పది","ジュウ (juu)","とお (too)"],
+["百","hundred","వంద","ヒャク (hyaku)","—"],
+["千","thousand","వెయ్యి","セン (sen)","ち (chi)"],
+["万","ten thousand","పదివేలు","マン (man)","—"],
+["円","yen, circle","యెన్ (డబ్బు), వృత్తం","エン (en)","まる(い) (marui)"],
+["人","person","మనిషి","ジン・ニン (jin, nin)","ひと (hito)"],
+["男","man, male","మగవాడు","ダン (dan)","おとこ (otoko)"],
+["女","woman, female","స్త్రీ","ジョ (jo)","おんな (onna)"],
+["子","child","పిల్లవాడు/పిల్ల","シ (shi)","こ (ko)"],
+["母","mother","అమ్మ","ボ (bo)","はは (haha)"],
+["父","father","నాన్న","フ (fu)","ちち (chichi)"],
+["友","friend","స్నేహితుడు","ユウ (yuu)","とも (tomo)"],
+["先","ahead, previous","ముందు","セン (sen)","さき (saki)"],
+["生","life, birth","జీవితం, పుట్టుక","セイ (sei)","い(きる), う(まれる) (ikiru, umareru)"],
+["学","study, learning","చదువు","ガク (gaku)","まな(ぶ) (manabu)"],
+["校","school","పాఠశాల","コウ (kou)","—"],
+["大","big","పెద్ద","ダイ・タイ (dai, tai)","おお(きい) (ookii)"],
+["小","small","చిన్న","ショウ (shou)","ちい(さい) (chiisai)"],
+["中","middle, inside","మధ్య, లోపల","チュウ (chuu)","なか (naka)"],
+["上","up, above","పైన","ジョウ (jou)","うえ (ue)"],
+["下","down, below","కింద","カ・ゲ (ka, ge)","した (shita)"],
+["左","left","ఎడమ","サ (sa)","ひだり (hidari)"],
+["右","right","కుడి","ウ・ユウ (u, yuu)","みぎ (migi)"],
+["前","front, before","ముందు","ゼン (zen)","まえ (mae)"],
+["後","behind, after","వెనుక, తరువాత","ゴ・コウ (go, kou)","うし(ろ), あと (ushiro, ato)"],
+["外","outside","బయట","ガイ (gai)","そと (soto)"],
+["東","east","తూర్పు","トウ (tou)","ひがし (higashi)"],
+["西","west","పడమర","セイ・サイ (sei, sai)","にし (nishi)"],
+["南","south","దక్షిణం","ナン (nan)","みなみ (minami)"],
+["北","north","ఉత్తరం","ホク (hoku)","きた (kita)"],
+["口","mouth","నోరు","コウ (kou)","くち (kuchi)"],
+["目","eye","కన్ను","モク (moku)","め (me)"],
+["耳","ear","చెవి","ジ (ji)","みみ (mimi)"],
+["手","hand","చేయి","シュ (shu)","て (te)"],
+["足","leg, foot","కాలు","ソク (soku)","あし (ashi)"],
+["力","power, strength","శక్తి","リョク・リキ (ryoku, riki)","ちから (chikara)"],
+["山","mountain","కొండ","サン (san)","やま (yama)"],
+["川","river","నది","セン (sen)","かわ (kawa)"],
+["田","rice field","పొలం","デン (den)","た (ta)"],
+["天","heaven, sky","ఆకాశం, స్వర్గం","テン (ten)","—"],
+["気","spirit, air, mood","గాలి, మనసు","キ (ki)","—"],
+["雨","rain","వర్షం","ウ (u)","あめ (ame)"],
+["花","flower","పువ్వు","カ (ka)","はな (hana)"],
+["空","sky, empty","ఆకాశం, ఖాళీ","クウ (kuu)","そら (sora)"],
+["犬","dog","కుక్క","ケン (ken)","いぬ (inu)"],
+["魚","fish","చేప","ギョ (gyo)","さかな (sakana)"],
+["鳥","bird","పక్షి","チョウ (chou)","とり (tori)"],
+["虫","insect","పురుగు","チュウ (chuu)","むし (mushi)"],
+["牛","cow","ఆవు","ギュウ (gyuu)","うし (ushi)"],
+["馬","horse","గుర్రం","バ (ba)","うま (uma)"],
+["白","white","తెలుపు","ハク (haku)","しろ(い) (shiroi)"],
+["赤","red","ఎరుపు","セキ (seki)","あか(い) (akai)"],
+["青","blue","నీలం","セイ (sei)","あお(い) (aoi)"],
+["黒","black","నలుపు","コク (koku)","くろ(い) (kuroi)"],
+["本","book, origin","పుస్తకం, మూలం","ホン (hon)","もと (moto)"],
+["文","sentence, text","వాక్యం","ブン (bun)","—"],
+["字","character, letter","అక్షరం","ジ (ji)","—"],
+["語","language, word","భాష","ゴ (go)","かた(る) (kataru)"],
+["名","name","పేరు","メイ (mei)","な (na)"],
+["見","see, look","చూడు","ケン (ken)","み(る) (miru)"],
+["聞","hear, ask","విను, అడుగు","ブン (bun)","き(く) (kiku)"],
+["話","speak, talk","మాట్లాడు","ワ (wa)","はな(す) (hanasu)"],
+["読","read","చదువు","ドク (doku)","よ(む) (yomu)"],
+["書","write","రాయు","ショ (sho)","か(く) (kaku)"],
+["言","say","చెప్పు","ゲン (gen)","い(う) (iu)"],
+["食","eat","తిను","ショク (shoku)","た(べる) (taberu)"],
+["飲","drink","తాగు","イン (in)","の(む) (nomu)"],
+["行","go","వెళ్ళు","コウ (kou)","い(く) (iku)"],
+["来","come","రా (వచ్చు)","ライ (rai)","く(る) (kuru)"],
+["帰","return, go back","తిరిగి వెళ్ళు","キ (ki)","かえ(る) (kaeru)"],
+["出","exit, go out","బయటకు వెళ్ళు","シュツ (shutsu)","で(る) (deru)"],
+["入","enter","లోపలికి వెళ్ళు","ニュウ (nyuu)","はい(る) (hairu)"],
+["立","stand","నిలబడు","リツ (ritsu)","た(つ) (tatsu)"],
+["休","rest","విశ్రాంతి","キュウ (kyuu)","やす(む) (yasumu)"],
+["買","buy","కొను","バイ (bai)","か(う) (kau)"],
+["売","sell","అమ్ము","バイ (bai)","う(る) (uru)"],
+["会","meet","కలువు","カイ (kai)","あ(う) (au)"],
+["作","make","తయారు చేయు","サク (saku)","つく(る) (tsukuru)"],
+["使","use","వాడు, ఉపయోగించు","シ (shi)","つか(う) (tsukau)"],
+["思","think","ఆలోచించు","シ (shi)","おも(う) (omou)"],
+["知","know","తెలుసుకొను","チ (chi)","し(る) (shiru)"],
+["住","live, reside","నివసించు","ジュウ (juu)","す(む) (sumu)"],
+["待","wait","వేచి ఉండు","タイ (tai)","ま(つ) (matsu)"],
+["持","hold, have","పట్టుకొను","ジ (ji)","も(つ) (motsu)"],
+["走","run","పరుగెత్తు","ソウ (sou)","はし(る) (hashiru)"],
+["歩","walk","నడుచు","ホ (ho)","ある(く) (aruku)"],
+["泳","swim","ఈదు","エイ (ei)","およ(ぐ) (oyogu)"],
+["起","wake up, get up","లేచు","キ (ki)","お(きる) (okiru)"],
+["寝","sleep","నిద్రపోవు","シン (shin)","ね(る) (neru)"],
+["死","die","చనిపోవు","シ (shi)","し(ぬ) (shinu)"],
+["年","year","సంవత్సరం","ネン (nen)","とし (toshi)"],
+["時","time, hour","సమయం, గంట","ジ (ji)","とき (toki)"],
+["分","minute, divide, understand","నిమిషం, అర్థం చేసుకొను","フン・ブン (fun, bun)","わ(かる) (wakaru)"],
+["半","half","సగం","ハン (han)","—"],
+["間","interval, between","మధ్య (సమయం/స్థలం)","カン (kan)","あいだ (aida)"],
+["今","now","ఇప్పుడు","コン (kon)","いま (ima)"],
+["毎","every","ప్రతి","マイ (mai)","—"],
+["週","week","వారం","シュウ (shuu)","—"],
+["朝","morning","ఉదయం","チョウ (chou)","あさ (asa)"],
+["昼","noon, daytime","మధ్యాహ్నం, పగలు","チュウ (chuu)","ひる (hiru)"],
+["夜","night","రాత్రి","ヤ (ya)","よる (yoru)"],
+["夕","evening","సాయంత్రం","セキ (seki)","ゆう (yuu)"],
+["午","noon","మధ్యాహ్నం","ゴ (go)","—"],
+["長","long, chief","పొడవు, పెద్ద","チョウ (chou)","なが(い) (nagai)"],
+["高","tall, expensive","ఎత్తు, ఖరీదు","コウ (kou)","たか(い) (takai)"],
+["安","cheap, safe","చౌక, సురక్షితం","アン (an)","やす(い) (yasui)"],
+["新","new","కొత్త","シン (shin)","あたら(しい) (atarashii)"],
+["古","old","పాత","コ (ko)","ふる(い) (furui)"],
+["多","many, much","ఎక్కువ","タ (ta)","おお(い) (ooi)"],
+["少","few, little","తక్కువ, కొంచెం","ショウ (shou)","すく(ない), すこ(し) (sukunai, sukoshi)"],
+["早","early, fast","తొందర, ముందుగా","ソウ (sou)","はや(い) (hayai)"],
+["広","wide, spacious","విశాలం","コウ (kou)","ひろ(い) (hiroi)"],
+["元","origin, source","మూలం","ゲン・ガン (gen, gan)","もと (moto)"],
+["国","country","దేశం","コク (koku)","くに (kuni)"],
+["家","house, family","ఇల్లు, కుటుంబం","カ (ka)","いえ (ie)"],
+["店","shop, store","దుకాణం","テン (ten)","みせ (mise)"],
+["駅","station","రైల్వే స్టేషన్","エキ (eki)","—"],
+["道","road, way","దారి","ドウ (dou)","みち (michi)"],
+["車","car, vehicle","బండి, కారు","シャ (sha)","くるま (kuruma)"],
+["電","electricity","విద్యుత్తు","デン (den)","—"],
+["社","company, shrine","కంపెనీ, గుడి","シャ (sha)","やしろ (yashiro)"],
+["銀","silver","వెండి","ギン (gin)","—"],
+["病","illness, sick","జబ్బు, వ్యాధి","ビョウ (byou)","やまい (yamai)"],
+["院","institution","సంస్థ (ఆసుపత్రి 病院)","イン (in)","—"],
+["医","doctor, medicine","వైద్యం, డాక్టర్","イ (i)","—"],
+["映","reflect, project","ప్రతిబింబం (సినిమా 映画)","エイ (ei)","うつ(る) (utsuru)"],
+["画","picture, drawing","బొమ్మ, చిత్రం","ガ・カク (ga, kaku)","—"],
+["音","sound","శబ్దం","オン (on)","おと (oto)"],
+["楽","fun, music","సంతోషం, సంగీతం","ガク・ラク (gaku, raku)","たの(しい) (tanoshii)"],
+["好","like, fond","ఇష్టం","コウ (kou)","す(き) (suki)"],
+["何","what","ఏమిటి","カ (ka)","なに, なん (nani, nan)"],
+["私","I, private","నేను","シ (shi)","わたし (watashi)"],
+["勉","exertion, effort","కృషి (చదువు 勉強)","ベン (ben)","—"],
+["強","strong","బలం, గట్టి","キョウ (kyou)","つよ(い) (tsuyoi)"],
+["雪","snow","మంచు","セツ (setsu)","ゆき (yuki)"],
+["風","wind","గాలి","フウ (fuu)","かぜ (kaze)"],
+["春","spring (season)","వసంతం","シュン (shun)","はる (haru)"],
+["夏","summer","వేసవి","カ (ka)","なつ (natsu)"],
+["秋","autumn","శరదృతువు","シュウ (shuu)","あき (aki)"],
+["冬","winter","చలికాలం","トウ (tou)","ふゆ (fuyu)"]
+];
+
+// ---------- App state ----------
+let currentScript = null;   // 'hiragana' | 'katakana' | 'kanji'
+let currentTab = 'basic';
+let quiz = null;
+
+const KANA_GROUPS = { basic: KANA_BASIC, dakuten: KANA_DAKUTEN, combo: KANA_COMBO };
+const TAB_LABELS = { basic: 'Basic (46)', dakuten: 'Dakuten (25)', combo: 'Combos (33)' };
+const SCRIPT_NAMES = {
+  hiragana: ['Hiragana', 'ひらがな', 'హిరగన'],
+  katakana: ['Katakana', 'カタカナ', 'కటకన'],
+  kanji: ['Kanji', '漢字', 'కంజి']
+};
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('backBtn').style.display = id==='scr-home' ? 'none' : 'block';
+  window.scrollTo(0,0);
+}
+
+function goBack(){
+  if(document.getElementById('scr-quiz').classList.contains('active')) openScript(currentScript);
+  else { document.getElementById('title').childNodes[0].nodeValue='JLPT N5 Trainer'; document.getElementById('subtitle').textContent='Japanese • 日本語 • జపనీస్'; show('scr-home'); }
+}
+
+// ---------- Charts ----------
+function openScript(script){
+  currentScript = script;
+  const n = SCRIPT_NAMES[script];
+  document.getElementById('title').childNodes[0].nodeValue = n[0];
+  document.getElementById('subtitle').textContent = n[1] + ' • ' + n[2];
+  const tabs = document.getElementById('tabs');
+  if(script === 'kanji'){
+    tabs.innerHTML = '';
+    renderKanjiChart();
+  } else {
+    currentTab = 'basic';
+    tabs.innerHTML = Object.keys(KANA_GROUPS).map(g =>
+      `<button id="tab-${g}" onclick="setTab('${g}')">${TAB_LABELS[g]}</button>`).join('');
+    setTab('basic');
+  }
+  show('scr-chart');
+}
+
+function setTab(g){
+  currentTab = g;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+g).classList.add('on');
+  renderKanaChart();
+}
+
+const CHART_LAYOUT = {
+  basic: { cols: ['A','I','U','E','O'], rows: [
+    ['–',[0,1,2,3,4]],['K',[5,6,7,8,9]],['S',[10,11,12,13,14]],['T',[15,16,17,18,19]],
+    ['N',[20,21,22,23,24]],['H',[25,26,27,28,29]],['M',[30,31,32,33,34]],
+    ['Y',[35,null,36,null,37]],['R',[38,39,40,41,42]],['W',[43,null,null,null,44]],['N',[45,null,null,null,null]]
+  ]},
+  dakuten: { cols: ['A','I','U','E','O'], rows: [
+    ['G',[0,1,2,3,4]],['Z',[5,6,7,8,9]],['D',[10,11,12,13,14]],['B',[15,16,17,18,19]],['P',[20,21,22,23,24]]
+  ]},
+  combo: { cols: ['YA','YU','YO'], rows: [
+    ['KY',[0,1,2]],['SH',[3,4,5]],['CH',[6,7,8]],['NY',[9,10,11]],['HY',[12,13,14]],['MY',[15,16,17]],
+    ['RY',[18,19,20]],['GY',[21,22,23]],['J',[24,25,26]],['BY',[27,28,29]],['PY',[30,31,32]]
+  ]}
+};
+
+function renderKanaChart(){
+  const idx = currentScript === 'hiragana' ? 0 : 1;
+  const data = KANA_GROUPS[currentTab];
+  const lay = CHART_LAYOUT[currentTab];
+  let html = `<div class="tbl ${lay.cols.length === 5 ? 'c6' : 'c4'}">`;
+  html += '<div class="hdr"></div>' + lay.cols.map(c => `<div class="hdr">${c}</div>`).join('');
+  for(const [lbl, cells] of lay.rows){
+    html += `<div class="rowlbl">${lbl}</div>`;
+    html += cells.map(i => i === null
+      ? '<div class="tcell empty"></div>'
+      : `<div class="tcell"><div class="ch">${data[i][idx]}</div><div class="ro">${data[i][2]}</div><div class="te">${data[i][3]}</div></div>`
+    ).join('');
+  }
+  document.getElementById('chart').innerHTML = html + '</div>';
+}
+
+function renderKanjiChart(){
+  document.getElementById('chart').innerHTML = '<div class="kgrid">' + KANJI.map(k =>
+    `<div class="kcell"><div class="ch">${k[0]}</div><div><div class="en">${k[1]}</div><div class="te">${k[2]}</div><div class="rd">On: ${k[3]}<br>Kun: ${k[4]}</div></div></div>`
+  ).join('') + '</div>';
+}
+
+// ---------- Practice ----------
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function startPractice(){
+  let pool;
+  if(currentScript === 'kanji') pool = KANJI.slice();
+  else pool = KANA_BASIC.concat(KANA_DAKUTEN, KANA_COMBO);
+  quiz = { pool: shuffle(pool.slice()), i: 0, score: 0, answered: false };
+  show('scr-quiz');
+  nextQuestion(true);
+}
+
+function nextQuestion(first){
+  if(!first) quiz.i++;
+  if(quiz.i >= quiz.pool.length){ quiz.i = 0; shuffle(quiz.pool); }
+  quiz.answered = false;
+  const item = quiz.pool[quiz.i];
+  const isKanji = currentScript === 'kanji';
+  const chIdx = currentScript === 'hiragana' ? 0 : 1;
+
+  document.getElementById('qCount').textContent = 'Question ' + (quiz.total = (quiz.total||0) + 1);
+  document.getElementById('qScore').textContent = 'Score: ' + quiz.score + ' / ' + (quiz.total - 1);
+  document.getElementById('qCh').textContent = isKanji ? item[0] : item[chIdx];
+  document.getElementById('qHint').textContent = isKanji ? 'What does this kanji mean?' : 'How is this pronounced?';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('nextBtn').style.visibility = 'hidden';
+
+  // Build 4 options: correct + 3 distractors
+  const others = shuffle(quiz.pool.filter(x => x !== item)).slice(0,3);
+  const options = shuffle([item, ...others]);
+  const opts = document.getElementById('opts');
+  opts.className = 'opts' + (isKanji ? ' kmode' : '');
+  opts.innerHTML = options.map((o,n) =>
+    isKanji
+      ? `<button data-n="${n}"><span class="ro">${o[1]}</span><br><span class="te">${o[2]}</span></button>`
+      : `<button data-n="${n}"><span class="ro">${o[2]}</span><br><span class="te">${o[3]}</span></button>`
+  ).join('');
+  opts.querySelectorA
